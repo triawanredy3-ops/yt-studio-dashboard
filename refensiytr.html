@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Studio Pro | Advanced Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#030305',
+                        ytRed: '#ff0033',
+                        panelBg: 'rgba(12, 12, 16, 0.75)',
+                    },
+                    boxShadow: {
+                        glass: '0 8px 32px 0 rgba(0, 0, 0, 0.8)',
+                        neonRed: '0 0 20px rgba(255, 0, 51, 0.3)',
+                        neonBlue: '0 0 20px rgba(59, 130, 246, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #030305; color: #f3f4f6; overflow-x: hidden; }
+        
+        .glass-panel {
+            background: rgba(15, 15, 20, 0.6);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.02);
+        }
+        .glass-modal {
+            background: rgba(8, 8, 12, 0.95);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 0, 51, 0.2);
+        }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #ff0033; }
+        
+        @keyframes ambientPulse {
+            0%, 100% { opacity: 0.15; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(1.1); }
+        }
+        .animate-ambient { animation: ambientPulse 10s ease-in-out infinite; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative selection:bg-red-600 selection:text-white">
+
+    <div id="loginOverlay" class="fixed inset-0 bg-black/95 z-[100] flex items-center justify-center backdrop-blur-3xl transition-opacity duration-500">
+        <div class="glass-modal p-8 rounded-3xl max-w-sm w-full shadow-neonRed border-t-4 border-t-red-600 text-center animate-in fade-in zoom-in duration-300">
+            <div class="w-20 h-20 bg-red-600/10 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-red-500/30 text-4xl shadow-neonRed">
+                <i class="fa-solid fa-microchip"></i>
+            </div>
+            <h2 class="text-2xl font-black text-white tracking-tight mb-2">Sistem Akses</h2>
+            <p class="text-xs text-slate-400 mb-8 font-medium">Dashboard Analitik Pro <span class="text-white font-bold bg-white/10 px-2 py-0.5 rounded">By. Redy TR</span></p>
+            
+            <div class="space-y-4 mb-6">
+                <input type="text" id="loginUser" placeholder="Username" class="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-red-500 transition text-center font-bold tracking-wider" autocomplete="off">
+                <input type="password" id="loginPass" placeholder="Password" class="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-red-500 transition text-center font-bold tracking-wider">
+            </div>
+            
+            <button onclick="checkLogin()" class="w-full bg-red-600 hover:bg-red-500 text-white py-3.5 rounded-xl text-sm font-black transition shadow-neonRed uppercase tracking-widest">
+                Otorisasi Masuk
+            </button>
+            <p id="loginErrorMsg" class="text-xs text-red-500 mt-4 hidden font-bold bg-red-500/10 py-2 rounded-lg border border-red-500/20">Akses Ditolak!</p>
+        </div>
+    </div>
+
+    <!-- Ambient Backgrounds -->
+    <div class="fixed top-[-15%] left-[-10%] w-[50vw] h-[50vw] bg-red-700/20 rounded-full blur-[160px] pointer-events-none animate-ambient z-0"></div>
+    <div class="fixed bottom-[-15%] right-[-10%] w-[40vw] h-[40vw] bg-blue-700/10 rounded-full blur-[140px] pointer-events-none animate-ambient z-0" style="animation-delay: 5s;"></div>
+
+    <header class="glass-panel sticky top-0 z-40 border-b border-white/5 px-6 py-4 shadow-glass">
+        <div class="max-w-[100rem] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-4">
+                <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center shadow-neonRed text-white text-lg border border-red-400">
+                    <i class="fa-brands fa-youtube"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-black tracking-tight text-white leading-tight">YouTube Studio Pro</h1>
+                    <p class="text-[10px] text-slate-400 font-bold tracking-widest uppercase mt-0.5">
+                        <span class="text-red-500">By. Redy TR</span> &bull; Engine v2.8
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 w-full md:w-auto justify-end flex-wrap">
+                <button onclick="openConfigModal()" class="bg-white/5 hover:bg-white/10 text-slate-200 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 border border-white/10">
+                    <i class="fa-solid fa-code text-slate-400"></i> API Config
+                </button>
+                <button onclick="fetchChannelData()" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 shadow-neonRed">
+                    <i class="fa-solid fa-rotate"></i> Sinkronisasi
+                </button>
+                <button onclick="logout()" class="bg-black/40 hover:bg-black/60 text-red-500 border border-red-500/20 px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2">
+                    <i class="fa-solid fa-power-off"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-[100rem] w-full mx-auto p-4 sm:p-6 space-y-8 relative z-10">
+        <div id="toastMessage" class="hidden p-4 rounded-xl text-sm border flex items-center justify-between transition-all duration-300 shadow-2xl backdrop-blur-xl z-50 fixed bottom-6 right-6 w-80">
+            <span id="toastText" class="font-bold"></span>
+        </div>
+
+        <div id="welcomeState" class="glass-panel rounded-3xl p-16 text-center shadow-glass mt-12 max-w-2xl mx-auto border border-white/5">
+            <div class="w-20 h-20 bg-white/5 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 border border-white/10 text-3xl">
+                <i class="fa-solid fa-satellite-dish"></i>
+            </div>
+            <h3 class="text-2xl font-black text-white mb-2">Engine Standby</h3>
+            <p class="text-sm text-slate-400 mb-8 font-medium">Sistem membutuhkan konfigurasi API Key dan Channel ID untuk menarik data matriks resolusi tinggi.</p>
+            <button onclick="openConfigModal()" class="bg-red-600 hover:bg-red-500 text-white px-8 py-3 rounded-xl text-sm font-black tracking-widest uppercase transition shadow-neonRed">
+                Konfigurasi Sekarang
+            </button>
+        </div>
+
+        <div id="loadingState" class="hidden flex flex-col items-center justify-center py-32">
+            <div class="relative w-20 h-20 mb-6">
+                <div class="absolute inset-0 border-[3px] border-white/10 rounded-full"></div>
+                <div class="absolute inset-0 border-[3px] border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center text-red-500 text-xl"><i class="fa-brands fa-youtube"></i></div>
+            </div>
+            <p class="text-xs font-black text-white tracking-[0.3em] uppercase animate-pulse">Menambang Data Metadata...</p>
+        </div>
+
+        <!-- Channel Analytics Dashboard -->
+        <div id="dashboardContent" class="hidden space-y-6">
+            
+            <!-- Profil & Main Stats -->
+            <section class="glass-panel rounded-3xl p-6 shadow-glass border border-white/5 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-red-600/10 blur-[80px] rounded-full pointer-events-none"></div>
+                
+                <div class="flex flex-col lg:flex-row gap-8 items-center lg:items-start relative z-10">
+                    <div class="relative shrink-0 group">
+                        <img id="channelAvatar" src="" class="w-32 h-32 rounded-2xl border border-white/10 object-cover shadow-2xl group-hover:scale-105 transition duration-500">
+                        <div class="absolute -bottom-3 -right-3 bg-blue-600 text-white w-8 h-8 flex items-center justify-center rounded-lg border-2 border-darkBg shadow-neonBlue">
+                            <i class="fa-solid fa-check text-xs"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 w-full text-center lg:text-left">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                            <div>
+                                <h2 id="channelTitle" class="text-3xl font-black text-white tracking-tight mb-1"></h2>
+                                <p id="channelDescription" class="text-xs text-slate-400 line-clamp-1 max-w-xl font-medium"></p>
+                            </div>
+                            
+                            <div class="flex gap-2 justify-center">
+                                <div class="bg-blue-500/10 border border-blue-500/30 text-blue-400 px-3 py-1.5 rounded-lg flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                                    <i class="fa-solid fa-earth-asia"></i> <span id="channelCountry">-</span>
+                                </div>
+                                <div class="bg-purple-500/10 border border-purple-500/30 text-purple-400 px-3 py-1.5 rounded-lg flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                                    <i class="fa-solid fa-music"></i> <span id="channelGenre">Menganalisis...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="bg-white/5 p-4 rounded-2xl border border-white/5 shadow-inner">
+                                <div class="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1 flex items-center gap-1.5"><i class="fa-solid fa-users"></i> Subscribers</div>
+                                <div id="channelSubs" class="text-xl font-black text-white">0</div>
+                            </div>
+                            <div class="bg-white/5 p-4 rounded-2xl border border-white/5 shadow-inner">
+                                <div class="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1 flex items-center gap-1.5"><i class="fa-solid fa-eye"></i> Total Views</div>
+                                <div id="channelViews" class="text-xl font-black text-white">0</div>
+                            </div>
+                            <div class="bg-white/5 p-4 rounded-2xl border border-white/5 shadow-inner">
+                                <div class="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1 flex items-center gap-1.5"><i class="fa-solid fa-video"></i> Video Terbaru</div>
+                                <div id="channelVideos" class="text-xl font-black text-white">0</div>
+                            </div>
+                            <div class="bg-gradient-to-br from-red-950/50 to-black p-4 rounded-2xl border border-red-500/20 shadow-inner relative overflow-hidden flex flex-col justify-center">
+                                <i class="fa-solid fa-coins absolute right-2 bottom-2 text-red-500/10 text-4xl"></i>
+                                <div class="text-[10px] text-red-400 uppercase font-black tracking-widest mb-2 relative z-10 flex justify-between items-center">
+                                    <span><i class="fa-solid fa-wallet mr-1"></i> Real-Est Revenue</span> 
+                                </div>
+                                <div id="channelEstRev" class="relative z-10 flex flex-col gap-0.5">
+                                    <!-- Diisi oleh JS dengan format vertikal rapi -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tools & Sorting -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-between items-center bg-black/40 p-3 rounded-2xl border border-white/5 backdrop-blur-md">
+                <div class="relative w-full sm:w-96">
+                    <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="searchInput" oninput="filterVideos()" placeholder="Pindai judul video..." class="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500 transition font-medium">
+                </div>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <select id="sortSelect" onchange="sortVideos()" class="w-full sm:w-auto bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-red-500 transition cursor-pointer font-bold">
+                        <option value="newest">Terbaru</option>
+                        <option value="views">Views Tertinggi</option>
+                        <option value="er">Engagement Tertinggi</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Video Grid -->
+            <div id="videoGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
+        </div>
+    </main>
+
+    <!-- Modal Config -->
+    <div id="configModal" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-modal rounded-3xl max-w-md w-full p-8 shadow-2xl relative border border-white/10">
+            <h3 class="text-xl font-black text-white mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
+                <i class="fa-solid fa-server text-red-500"></i> Akses API Server
+            </h3>
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">YouTube API Key</label>
+                    <input type="password" id="apiKeyInput" placeholder="Masukkan API Key..." class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-red-500 font-mono mb-3 transition">
+                    
+                    <!-- KOTAK BANTUAN TAUTAN API -->
+                    <div class="bg-blue-950/30 border border-blue-500/30 p-3 rounded-xl flex items-start gap-3 transition hover:bg-blue-900/30">
+                        <i class="fa-brands fa-google text-blue-400 text-lg mt-0.5"></i>
+                        <div>
+                            <p class="text-[9px] text-slate-300 font-medium mb-1.5 leading-relaxed">Sistem membutuhkan YouTube Data API v3 untuk menarik matriks channel secara real-time.</p>
+                            <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" class="text-[10px] font-black text-blue-400 hover:text-blue-300 flex items-center gap-1.5 transition">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i> Buat API Key Gratis di sini
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Channel ID / Username</label>
+                    <input type="text" id="channelIdInput" placeholder="Contoh: UC... atau @handle" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-red-500 font-mono transition">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-8">
+                <button onclick="closeConfigModal()" class="flex-1 bg-white/5 hover:bg-white/10 text-white py-3.5 rounded-xl text-xs font-bold transition">Batal</button>
+                <button onclick="saveConfig()" class="flex-1 bg-red-600 hover:bg-red-500 text-white py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition shadow-neonRed">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Analitik Detail -->
+    <div id="detailModal" class="fixed inset-0 bg-black/95 backdrop-blur-2xl z-50 flex items-center justify-center p-2 sm:p-6 hidden">
+        <div class="glass-modal rounded-3xl max-w-[80rem] w-full max-h-[95vh] flex flex-col shadow-2xl overflow-hidden border-white/10">
+            
+            <div class="p-4 border-b border-white/5 flex items-center justify-between bg-black/40">
+                <h3 class="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
+                    <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div> Panel Analitik Video
+                </h3>
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-white p-2 bg-white/5 rounded-lg transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="p-4 sm:p-6 overflow-y-auto flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Preview Visual -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="relative aspect-video w-full bg-black rounded-2xl overflow-hidden border border-white/10 shadow-lg group">
+                        <img id="modalThumbnail" src="" class="w-full h-full object-cover">
+                        
+                        <!-- Lencana CTR Kualitas -->
+                        <div id="ctrBadge" class="absolute top-4 left-4 bg-black/80 backdrop-blur text-white px-3 py-1.5 rounded-lg border border-white/10 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg z-10">
+                            <!-- Diisi JS -->
+                        </div>
+
+                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                            <button onclick="forceDownloadThumbnail()" id="modalDownloadThumb" class="bg-red-600 text-white px-6 py-3 rounded-xl text-xs font-black transition flex items-center gap-2 shadow-neonRed uppercase tracking-widest">
+                                <i class="fa-solid fa-download"></i> Unduh 16:9 JPG
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white/5 p-5 rounded-2xl border border-white/5">
+                        <div class="flex justify-between items-start gap-4">
+                            <h4 id="modalTitle" class="text-lg font-black text-white leading-snug"></h4>
+                            <div class="flex gap-2 shrink-0">
+                                <a id="modalWatchBtn" href="#" target="_blank" class="bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded-lg text-[10px] font-bold transition flex items-center gap-1.5 shadow-neonRed border border-red-500">
+                                    <i class="fa-brands fa-youtube"></i> Tonton
+                                </a>
+                                <button onclick="copyData('title', 'copyTitleBtn')" id="copyTitleBtn" class="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg text-[10px] font-bold transition flex items-center gap-1.5 border border-white/5">
+                                    <i class="fa-regular fa-copy"></i> Salin
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mt-4 text-[10px] font-bold">
+                            <!-- JAM UPLOAD REAL-TIME WIB -->
+                            <span class="bg-black/50 text-slate-300 px-3 py-1.5 rounded-md border border-white/5"><i class="fa-regular fa-clock mr-1"></i> <span id="modalDate"></span></span>
+                            <span class="bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-md border border-emerald-500/20"><i class="fa-solid fa-eye mr-1"></i> <span id="modalViews"></span> Views</span>
+                            <span class="bg-blue-500/10 text-blue-400 px-3 py-1.5 rounded-md border border-blue-500/20"><i class="fa-solid fa-thumbs-up mr-1"></i> <span id="modalLikes"></span> Likes</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Ekstraksi & Matriks -->
+                <div class="space-y-4">
+                    <!-- Skor Kinerja -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-white/5 border border-white/5 p-4 rounded-2xl text-center">
+                            <div class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Potensi Konversi</div>
+                            <div id="modalER" class="text-xl font-black text-white">0%</div>
+                        </div>
+                        <div class="bg-white/5 border border-white/5 p-4 rounded-2xl text-center">
+                            <div class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">VPH (Velocity)</div>
+                            <div id="modalVPH" class="text-xl font-black text-white">0</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Estimasi Video Tunggal -->
+                    <div class="bg-black/30 border border-white/5 p-4 rounded-2xl shadow-inner">
+                        <div class="text-[10px] text-red-400 font-black uppercase tracking-widest mb-2 flex items-center justify-between">
+                            <span><i class="fa-solid fa-chart-line mr-1"></i> Real-Est Video Ini</span>
+                        </div>
+                        <div id="modalEstRev" class="text-sm font-black text-white bg-white/5 p-2 rounded-lg border border-white/5 text-center">Rp 0 - Rp 0</div>
+                    </div>
+
+                    <!-- SEO & Tags -->
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/5 flex flex-col h-40">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Metadata Tags</div>
+                            <button onclick="copyData('tags', 'copyTagsBtn')" id="copyTagsBtn" class="text-[10px] bg-white/10 px-2 py-1 rounded text-white font-bold hover:bg-white/20 transition">Salin</button>
+                        </div>
+                        <div id="modalTags" class="flex flex-wrap gap-1.5 overflow-y-auto content-start flex-1"></div>
+                    </div>
+
+                    <!-- Deskripsi -->
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/5 flex flex-col flex-1 h-32">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Deskripsi</div>
+                            <button onclick="copyData('desc', 'copyDescBtn')" id="copyDescBtn" class="text-[10px] bg-white/10 px-2 py-1 rounded text-white font-bold hover:bg-white/20 transition">Salin</button>
+                        </div>
+                        <div id="modalDescription" class="text-[10px] text-slate-400 font-mono whitespace-pre-wrap overflow-y-auto flex-1"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let globalVideos = [];
+        let activeVideo = null;
+        
+        // Konstanta Estimasi Pendapatan Realistis (RPM Indonesia / Global)
+        const RPM_MIN = 5000; // Rp 5.000 per 1k views
+        const RPM_MAX = 35000; // Rp 35.000 per 1k views
+
+        // Fungsi format Rupiah
+        function formatIDR(num) {
+            return new Intl.NumberFormat('id-ID', {style: 'currency', currency: 'IDR', maximumFractionDigits: 0}).format(num);
+        }
+
+        // FUNGSI WAKTU UPLOAD REAL-TIME (JAM & MENIT WIB)
+        function formatRealTimeWIB(isoString) {
+            const dateObj = new Date(isoString);
+            const dateStr = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+            const timeStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
+            return `${dateStr} | ${timeStr} WIB`;
+        }
+
+        function checkLogin() {
+            if(document.getElementById('loginUser').value === 'admin' && document.getElementById('loginPass').value === 'admin123456') {
+                sessionStorage.setItem('authPro', 'true');
+                document.getElementById('loginOverlay').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loginOverlay').classList.add('hidden');
+                    init();
+                }, 400);
+            } else {
+                document.getElementById('loginErrorMsg').classList.remove('hidden');
+            }
+        }
+
+        function logout() { sessionStorage.removeItem('authPro'); location.reload(); }
+
+        window.onload = () => {
+            if(sessionStorage.getItem('authPro') === 'true') {
+                document.getElementById('loginOverlay').classList.add('hidden');
+                init();
+            }
+        };
+
+        function init() {
+            if(localStorage.getItem('yt_key') && localStorage.getItem('yt_id')) fetchChannelData();
+        }
+
+        function openConfigModal() { document.getElementById('configModal').classList.remove('hidden'); }
+        function closeConfigModal() { document.getElementById('configModal').classList.add('hidden'); }
+        
+        function saveConfig() {
+            const k = document.getElementById('apiKeyInput').value.trim();
+            const id = document.getElementById('channelIdInput').value.trim();
+            if(!k || !id) return toast('Isi parameter dengan benar', 'err');
+            localStorage.setItem('yt_key', k);
+            localStorage.setItem('yt_id', id);
+            closeConfigModal();
+            fetchChannelData();
+        }
+
+        function toast(msg, type='ok') {
+            const t = document.getElementById('toastMessage');
+            document.getElementById('toastText').innerText = msg;
+            t.className = `p-4 rounded-xl text-sm border flex items-center justify-between transition-all duration-300 shadow-2xl backdrop-blur-xl z-[200] fixed bottom-6 right-6 w-80 ${type==='err' ? 'bg-red-950/90 border-red-800 text-red-200' : 'bg-emerald-950/90 border-emerald-800 text-emerald-200'}`;
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 3000);
+        }
+
+        function analyzeMainGenre(videos) {
+            const tagCount = {};
+            let hasTags = false;
+            videos.forEach(v => {
+                if(v.tags && v.tags.length > 0) {
+                    hasTags = true;
+                    v.tags.forEach(tag => {
+                        const t = tag.toLowerCase();
+                        if(t.length > 2 && !['video','youtube','terbaru','viral'].includes(t)) {
+                            tagCount[t] = (tagCount[t] || 0) + 1;
+                        }
+                    });
+                }
+            });
+            
+            if(!hasTags) return "General Content";
+            const sortedTags = Object.entries(tagCount).sort((a, b) => b[1] - a[1]);
+            const topStyle = sortedTags.slice(0, 2).map(i => i[0].charAt(0).toUpperCase() + i[0].slice(1)).join(' & ');
+            return topStyle || "General Content";
+        }
+
+        async function fetchChannelData() {
+            const key = localStorage.getItem('yt_key');
+            let query = localStorage.getItem('yt_id');
+            if(!key || !query) { document.getElementById('welcomeState').classList.remove('hidden'); return; }
+
+            document.getElementById('welcomeState').classList.add('hidden');
+            document.getElementById('dashboardContent').classList.add('hidden');
+            document.getElementById('loadingState').classList.remove('hidden');
+
+            try {
+                let channelId = query;
+                if(!query.startsWith('UC')) {
+                    const src = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(query)}&key=${key}`);
+                    const srcD = await src.json();
+                    if(!srcD.items || !srcD.items.length) throw new Error('Channel tidak ditemukan');
+                    channelId = srcD.items[0].snippet.channelId;
+                }
+
+                const chReq = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet,contentDetails,statistics&id=${channelId}&key=${key}`);
+                const chD = await chReq.json();
+                const ch = chD.items[0];
+
+                document.getElementById('channelTitle').innerText = ch.snippet.title;
+                document.getElementById('channelDescription').innerText = ch.snippet.description || 'Tidak ada deskripsi.';
+                document.getElementById('channelAvatar').src = ch.snippet.thumbnails.high.url;
+                
+                try {
+                    const cName = new Intl.DisplayNames(['id'], {type: 'region'}).of(ch.snippet.country || 'ID');
+                    document.getElementById('channelCountry').innerText = cName;
+                } catch(e) { document.getElementById('channelCountry').innerText = ch.snippet.country || 'Global'; }
+
+                document.getElementById('channelSubs').innerText = Number(ch.statistics.subscriberCount).toLocaleString('id-ID');
+                document.getElementById('channelViews').innerText = Number(ch.statistics.viewCount).toLocaleString('id-ID');
+
+                const upId = ch.contentDetails.relatedPlaylists.uploads;
+                const plReq = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId=${upId}&maxResults=36&key=${key}`);
+                const plD = await plReq.json();
+                
+                const vIds = plD.items.map(i => i.contentDetails.videoId).join(',');
+                const vReq = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${vIds}&key=${key}`);
+                const vD = await vReq.json();
+
+                let totalMinRev = 0;
+                let totalMaxRev = 0;
+
+                globalVideos = vD.items.map(v => {
+                    const view = Number(v.statistics.viewCount || 0);
+                    const like = Number(v.statistics.likeCount || 0);
+                    const com = Number(v.statistics.commentCount || 0);
+                    
+                    const hours = Math.abs(new Date() - new Date(v.snippet.publishedAt)) / 36e5;
+                    const vph = hours < 1 ? view : (view / hours).toFixed(1);
+                    const er = view > 0 ? (((like + com) / view) * 100).toFixed(2) : 0;
+                    
+                    // Kalkulasi Range Realistis
+                    const minEst = (view / 1000) * RPM_MIN;
+                    const maxEst = (view / 1000) * RPM_MAX;
+                    totalMinRev += minEst;
+                    totalMaxRev += maxEst;
+
+                    const hasMax = !!v.snippet.thumbnails.maxres;
+                    let ctrScore = hasMax ? "HIGH (MaxRes HD)" : "STANDARD (SD)";
+                    let ctrColor = hasMax ? "text-emerald-400 border-emerald-500/30" : "text-amber-400 border-amber-500/30";
+
+                    return {
+                        id: v.id, title: v.snippet.title, desc: v.snippet.description, tags: v.snippet.tags || [],
+                        pubRealStr: formatRealTimeWIB(v.snippet.publishedAt), // Waktu Real
+                        pubRaw: v.snippet.publishedAt,
+                        view, like, com, vph, er, minEst, maxEst,
+                        thumb: hasMax ? v.snippet.thumbnails.maxres.url : v.snippet.thumbnails.high.url,
+                        ctrScore, ctrColor, hasMax
+                    };
+                });
+                
+                document.getElementById('channelVideos').innerText = globalVideos.length;
+
+                // Tampilkan Range Realistis di Dashboard (Dirapikan ke format susun vertikal)
+                document.getElementById('channelEstRev').innerHTML = `
+                    <span class="block text-white text-xs lg:text-sm font-black">${formatIDR(totalMinRev)}</span>
+                    <span class="block text-slate-500 text-[9px] font-bold uppercase tracking-widest pt-0.5">s/d</span>
+                    <span class="block text-emerald-400 text-xs lg:text-sm font-black">${formatIDR(totalMaxRev)}</span>
+                `;
+                document.getElementById('channelGenre').innerText = analyzeMainGenre(globalVideos);
+
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('dashboardContent').classList.remove('hidden');
+                
+                sortVideos();
+                toast('Data berhasil ditarik');
+            } catch(e) {
+                toast(e.message, 'err');
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('welcomeState').classList.remove('hidden');
+            }
+        }
+
+        function sortVideos() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const mode = document.getElementById('sortSelect').value;
+            
+            let arr = globalVideos.filter(v => v.title.toLowerCase().includes(query));
+            if(mode === 'newest') arr.sort((a,b) => new Date(b.pubRaw) - new Date(a.pubRaw));
+            if(mode === 'views') arr.sort((a,b) => b.view - a.view);
+            if(mode === 'er') arr.sort((a,b) => b.er - a.er);
+            
+            const grid = document.getElementById('videoGrid');
+            grid.innerHTML = '';
+            
+            arr.forEach(v => {
+                const el = document.createElement('div');
+                el.className = 'bg-white/5 border border-white/5 rounded-2xl overflow-hidden cursor-pointer hover:border-red-500/40 hover:shadow-neonRed transition-all duration-300 group flex flex-col';
+                el.onclick = () => openModal(v.id);
+                
+                el.innerHTML = `
+                    <div class="relative aspect-video overflow-hidden bg-black">
+                        <img src="${v.thumb}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition duration-700">
+                        <div class="absolute top-2 left-2 bg-black/80 backdrop-blur ${v.ctrColor} border px-2 py-1 rounded text-[8px] font-black uppercase shadow-lg">
+                            <i class="fa-solid ${v.hasMax ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> CTR Est: ${v.ctrScore}
+                        </div>
+                        <div class="absolute bottom-2 right-2 bg-red-600/90 text-white text-[9px] font-black px-2 py-1 rounded shadow-lg">
+                            <i class="fa-solid fa-fire"></i> ${v.vph} VPH
+                        </div>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col">
+                        <h3 class="font-bold text-white text-xs line-clamp-2 mb-2 leading-snug group-hover:text-red-400 transition">${v.title}</h3>
+                        
+                        <!-- JAM UPLOAD REAL DI CARD -->
+                        <div class="text-[9px] text-slate-500 mb-3 font-mono flex items-center gap-1">
+                            <i class="fa-regular fa-clock"></i> ${v.pubRealStr}
+                        </div>
+
+                        <div class="mt-auto flex justify-between items-end mb-3">
+                            <div class="space-y-1">
+                                <div class="text-[10px] text-slate-400"><i class="fa-solid fa-eye w-3"></i> ${v.view.toLocaleString('id-ID')}</div>
+                                <div class="text-[10px] text-slate-400"><i class="fa-solid fa-heart w-3"></i> ${v.like.toLocaleString('id-ID')}</div>
+                            </div>
+                            <div class="flex flex-col items-end gap-1.5">
+                                <div class="text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-1 rounded font-black">
+                                    ER: ${v.er}%
+                                </div>
+                                <!-- TOMBOL TONTON DI CARD -->
+                                <a href="https://youtu.be/${v.id}" target="_blank" onclick="event.stopPropagation()" class="text-[9px] bg-white/5 hover:bg-red-600 text-slate-300 hover:text-white border border-white/10 px-2 py-1 rounded font-black transition flex items-center gap-1">
+                                    <i class="fa-brands fa-youtube text-red-500 group-hover:text-white"></i> Play
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- TAMBAHAN ESTIMASI PENDAPATAN PER VIDEO DI CARD -->
+                        <div class="pt-3 border-t border-white/10 flex flex-col gap-1">
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-money-bill-wave text-emerald-500 mr-1"></i> Estimasi Pendapatan</span>
+                            <span class="text-[10px] font-black text-emerald-400">${formatIDR(v.minEst)} - <span class="text-white">${formatIDR(v.maxEst)}</span></span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(el);
+            });
+        }
+
+        function filterVideos() { sortVideos(); }
+
+        function openModal(id) {
+            activeVideo = globalVideos.find(v => v.id === id);
+            document.getElementById('modalThumbnail').src = activeVideo.thumb;
+            document.getElementById('modalTitle').innerText = activeVideo.title;
+            
+            const badge = document.getElementById('ctrBadge');
+            badge.className = `absolute top-4 left-4 bg-black/80 backdrop-blur px-3 py-1.5 rounded-lg border text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg z-10 ${activeVideo.ctrColor}`;
+            badge.innerHTML = `<i class="fa-solid ${activeVideo.hasMax ? 'fa-bolt' : 'fa-triangle-exclamation'}"></i> Skor Resolusi Kualitas: ${activeVideo.ctrScore}`;
+
+            // Set link tombol tonton di Modal
+            document.getElementById('modalWatchBtn').href = `https://youtu.be/${activeVideo.id}`;
+
+            // Tampilkan Waktu Upload Real & Range Pendapatan Video di Modal
+            document.getElementById('modalDate').innerText = activeVideo.pubRealStr;
+            document.getElementById('modalViews').innerText = activeVideo.view.toLocaleString('id-ID');
+            document.getElementById('modalLikes').innerText = activeVideo.like.toLocaleString('id-ID');
+            document.getElementById('modalER').innerText = activeVideo.er + '%';
+            document.getElementById('modalVPH').innerText = activeVideo.vph;
+            document.getElementById('modalEstRev').innerHTML = `${formatIDR(activeVideo.minEst)} <span class="text-slate-500 mx-1 font-normal">-</span> ${formatIDR(activeVideo.maxEst)}`;
+            
+            document.getElementById('modalDescription').innerText = activeVideo.desc || '-';
+            
+            const tc = document.getElementById('modalTags');
+            tc.innerHTML = '';
+            activeVideo.tags.forEach(t => {
+                const s = document.createElement('span');
+                s.className = 'bg-white/10 text-slate-300 px-2 py-1 rounded text-[9px] font-mono whitespace-nowrap';
+                s.innerText = '#' + t;
+                tc.appendChild(s);
+            });
+
+            document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        function closeDetailModal() { document.getElementById('detailModal').classList.add('hidden'); }
+
+        function copyData(type, btnId) {
+            if(!activeVideo) return;
+            const text = type==='title'?activeVideo.title : type==='tags'?activeVideo.tags.join(', ') : activeVideo.desc;
+            const b = document.getElementById(btnId);
+            const ori = b.innerHTML;
+            const ta = document.createElement('textarea');
+            ta.value = text; ta.style.position = 'fixed';
+            document.body.appendChild(ta); ta.select();
+            try { 
+                document.execCommand('copy'); 
+                b.innerHTML = '<i class="fa-solid fa-check"></i>'; 
+                b.classList.add('bg-emerald-600', 'text-white'); 
+                setTimeout(()=>{ b.innerHTML=ori; b.classList.remove('bg-emerald-600','text-white'); }, 1500);
+            } catch(e) {}
+            document.body.removeChild(ta);
+        }
+
+        // FUNGSI BARU: UNDUH LANGSUNG VIA PROXY & BLOB + PAKSA 16:9 HD
+        async function forceDownloadThumbnail() {
+            if(!activeVideo) return;
+            
+            const btn = document.getElementById('modalDownloadThumb');
+            const origHTML = btn.innerHTML;
+            
+            // Animasi Loading
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin"></i> Menyiapkan 16:9 HD...`;
+            btn.disabled = true;
+
+            try {
+                // Menggunakan layanan weserv untuk by-pass CORS & memaksa konversi ke rasio 16:9 (1280x720 JPG)
+                const targetUrl = encodeURIComponent(activeVideo.thumb);
+                const proxyUrl = `https://wsrv.nl/?url=${targetUrl}&w=1280&h=720&fit=cover&output=jpg`;
+                
+                const response = await fetch(proxyUrl);
+                
+                if (!response.ok) throw new Error('Gagal menarik data gambar melalui proxy');
+                
+                // Mengonversi response menjadi objek file (Blob) lokal di memori browser
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                
+                // Memicu unduhan otomatis tanpa membuka tab baru
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                a.download = `Thumbnail_${activeVideo.id}_16-9_HD.jpg`;
+                
+                document.body.appendChild(a);
+                a.click();
+                
+                // Pembersihan memori cache
+                window.URL.revokeObjectURL(blobUrl);
+                document.body.removeChild(a);
+
+                // Notifikasi Sukses pada Tombol
+                btn.innerHTML = `<i class="fa-solid fa-check"></i> Berhasil Disimpan!`;
+                btn.classList.replace('bg-red-600', 'bg-emerald-600');
+                btn.classList.replace('hover:bg-red-500', 'hover:bg-emerald-500');
+
+            } catch (error) {
+                console.error('Error pengunduhan langsung:', error);
+                // Fallback (Buka Tab Baru) jika layanan proxy bermasalah
+                const a = document.createElement('a');
+                a.href = activeVideo.thumb; 
+                a.target = "_blank"; 
+                a.download = `Thumbnail_${activeVideo.id}_HD.jpg`;
+                document.body.appendChild(a); 
+                a.click(); 
+                document.body.removeChild(a);
+            } finally {
+                // Kembalikan tombol ke keadaan semula setelah 3 detik
+                setTimeout(() => {
+                    btn.innerHTML = origHTML;
+                    btn.classList.replace('bg-emerald-600', 'bg-red-600');
+                    btn.classList.replace('hover:bg-emerald-500', 'hover:bg-red-500');
+                    btn.disabled = false;
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
