@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alat Zona Waktu Dunia</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e272e;
+            color: #d2dae2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            margin: 0;
+        }
+        h1 { 
+            margin-bottom: 30px; 
+            color: #0fbcf9; 
+            text-align: center;
+        }
+        .clock-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+        .clock-card {
+            background: #485460;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+        .clock-card:hover { transform: translateY(-5px); }
+        .location { font-size: 1.2em; font-weight: bold; margin-bottom: 8px; color: #ffd32a; }
+        .date { font-size: 0.85em; margin-bottom: 10px; color: #808e9b; }
+        .time { font-size: 2.2em; font-family: monospace; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🌍 Jam Zona Waktu Dunia (Edisi Lengkap)</h1>
+    <div class="clock-container">
+        <!-- Indonesia -->
+        <div class="clock-card">
+            <div class="location">Jakarta (WIB)</div>
+            <div class="date" id="date-jakarta">-</div>
+            <div class="time" id="jakarta">--:--:--</div>
+        </div>
+        
+        <!-- Inggris -->
+        <div class="clock-card">
+            <div class="location">Inggris (London)</div>
+            <div class="date" id="date-london">-</div>
+            <div class="time" id="london">--:--:--</div>
+        </div>
+        
+        <!-- Amerika Serikat -->
+        <div class="clock-card">
+            <div class="location">Amerika (New York)</div>
+            <div class="date" id="date-newyork">-</div>
+            <div class="time" id="newyork">--:--:--</div>
+        </div>
+        <div class="clock-card">
+            <div class="location">Amerika (Los Angeles)</div>
+            <div class="date" id="date-la">-</div>
+            <div class="time" id="la">--:--:--</div>
+        </div>
+
+        <!-- Eropa & Lainnya -->
+        <div class="clock-card">
+            <div class="location">Italia (Roma)</div>
+            <div class="date" id="date-rome">-</div>
+            <div class="time" id="rome">--:--:--</div>
+        </div>
+        <div class="clock-card">
+            <div class="location">Brasil (São Paulo)</div>
+            <div class="date" id="date-brazil">-</div>
+            <div class="time" id="brazil">--:--:--</div>
+        </div>
+        <div class="clock-card">
+            <div class="location">Ukraina (Kyiv)</div>
+            <div class="date" id="date-kyiv">-</div>
+            <div class="time" id="kyiv">--:--:--</div>
+        </div>
+        <div class="clock-card">
+            <div class="location">Spanyol (Madrid)</div>
+            <div class="date" id="date-madrid">-</div>
+            <div class="time" id="madrid">--:--:--</div>
+        </div>
+        <div class="clock-card">
+            <div class="location">Portugal (Lisbon)</div>
+            <div class="date" id="date-lisbon">-</div>
+            <div class="time" id="lisbon">--:--:--</div>
+        </div>
+        <div class="clock-card">
+            <div class="location">Australia (Sydney)</div>
+            <div class="date" id="date-sydney">-</div>
+            <div class="time" id="sydney">--:--:--</div>
+        </div>
+        <div class="clock-card">
+            <div class="location">Jerman (Berlin)</div>
+            <div class="date" id="date-berlin">-</div>
+            <div class="time" id="berlin">--:--:--</div>
+        </div>
+        <div class="clock-card">
+            <div class="location">Prancis (Paris)</div>
+            <div class="date" id="date-paris">-</div>
+            <div class="time" id="paris">--:--:--</div>
+        </div>
+    </div>
+
+    <script>
+        function updateClocks() {
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+
+            // Daftar zona waktu
+            const zones = [
+                { id: 'jakarta', tz: 'Asia/Jakarta' },
+                { id: 'london', tz: 'Europe/London' },
+                { id: 'newyork', tz: 'America/New_York' },
+                { id: 'la', tz: 'America/Los_Angeles' },
+                { id: 'rome', tz: 'Europe/Rome' },
+                { id: 'brazil', tz: 'America/Sao_Paulo' },
+                { id: 'kyiv', tz: 'Europe/Kyiv' },
+                { id: 'madrid', tz: 'Europe/Madrid' },
+                { id: 'lisbon', tz: 'Europe/Lisbon' },
+                { id: 'sydney', tz: 'Australia/Sydney' },
+                { id: 'berlin', tz: 'Europe/Berlin' },
+                { id: 'paris', tz: 'Europe/Paris' }
+            ];
+
+            const now = new Date();
+
+            zones.forEach(zone => {
+                // Update Waktu
+                document.getElementById(zone.id).innerText = 
+                    now.toLocaleTimeString('id-ID', { ...timeOptions, timeZone: zone.tz }).replace(/\./g, ':');
+                
+                // Update Tanggal
+                document.getElementById(`date-${zone.id}`).innerText = 
+                    now.toLocaleDateString('id-ID', { ...dateOptions, timeZone: zone.tz });
+            });
+        }
+
+        // Perbarui setiap detik
+        setInterval(updateClocks, 1000);
+        updateClocks(); // Panggil segera saat dimuat
+    </script>
+</body>
+</html>
